@@ -1,14 +1,16 @@
 <!doctype html>
 <link rel="preload" href="static/SVThinHu.woff2" as="font" type="font/woff2" crossorigin>
 <script>
-function update() {
+async function update() {
     let json = await (await fetch("/refresh")).json();
-    for (const friend of json) {
-        for(const x;x<friend.level;x++) {
-            if (x == 0) {continue; }
-            document.getElementById("r"+friend.rowid+"img"+(x-1)).src = "/static/heart-full.png";
-            if (x % 0.5 == 0.5) {
-                document.getElementById("r"+friend.rowid+"img"+(x)).src = "/static/heart-half.png";
+    if (json.size != 0) {
+        for (const friend of json) {
+            for(const x=0;x<friend.level;x++) {
+                if (x == 0) {continue; }
+                document.getElementById("r"+friend.rowid+"img"+(x-1)).src = "/static/heart-full.png";
+                if (x % 0.5 == 0.5) {
+                    document.getElementById("r"+friend.rowid+"img"+(x)).src = "/static/heart-half.png";
+                }
             }
         }
     }

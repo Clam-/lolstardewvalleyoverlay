@@ -38,7 +38,7 @@ def index():
 @app.get('/refresh')
 def refresh():
     data = get_db().execute('''SELECT * FROM friendship ORDER BY name''').fetchall()
-    return dict(data)
+    return [dict(d) for d in data] # lame and annoying.
 
 
 @app.get('/adminpanel')
