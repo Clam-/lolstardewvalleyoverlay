@@ -8,6 +8,7 @@ UPDATES = {
     "gift" : "UPDATE friendship SET gift = :value WHERE rowid=:rid;",
     "lock" : "UPDATE friendship SET locked = :value WHERE rowid=:rid;",
 }
+SELECT_FRIENDS = '''SELECT rowid,* FROM friendship ORDER BY name;'''
 NEW_FRIEND = "INSERT INTO friendship VALUES(:name, :level, :gift, :locked);"
 TABLE_CREATE = "CREATE TABLE friendship(name TEXT, level INT, gift INT, locked INT);"
 
@@ -32,19 +33,19 @@ def close_connection(exception):
 
 @app.get('/')
 def index():
-    data = get_db().execute('''SELECT * FROM friendship ORDER BY name''').fetchall()
-    return render_template('render.jinja', data=data)
+    data = get_db().execute(SELECT_FRIENDS).fetchall()
+    return render_template('render.jinja', friendship=data)
 
 @app.get('/refresh')
 def refresh():
-    data = get_db().execute('''SELECT * FROM friendship ORDER BY name''').fetchall()
+    data = get_db().execute(SELECT_FRIENDS).fetchall()
     return [dict(d) for d in data] # lame and annoying.
 
 
 @app.get('/adminpanel')
 def admin():
-    data = get_db().execute('''SELECT * FROM friendship ORDER BY name''').fetchall()
-    return render_template('controlpanel.jinja', data=data)
+    data = get_db().execute(SELECT_FRIENDS).fetchall()
+    return render_template('controlpanel.jinja', friendship=data)
 
 @app.get('/adminpanel/<iid>/<attr>/<value>')
 def update(iid, attr, value):

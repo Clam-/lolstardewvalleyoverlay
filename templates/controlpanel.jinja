@@ -1,12 +1,13 @@
 <!doctype html>
+<link href="stylesheet.css" rel="stylesheet">
 <link rel="preload" href="static/SVThinHu.woff2" as="font" type="font/woff2" crossorigin>
 <script>
 async function update() {
     let json = await (await fetch("/refresh")).json();
     if (json.size != 0) {
         for (const friend of json) {
-            for(const x=0;x<friend.level;x++) {
-                if (x == 0) {continue; }
+            for(let x=0; x<friend.level; x++) {
+                if (x == 0) { continue; }
                 document.getElementById("r"+friend.rowid+"img"+(x-1)).src = "/static/heart-full.png";
                 if (x % 0.5 == 0.5) {
                     document.getElementById("r"+friend.rowid+"img"+(x)).src = "/static/heart-half.png";
@@ -25,19 +26,20 @@ body {
 }
 </style>
 <title>Friendship - admin</title>
-{% for friend in friendship %} ({{ friend.level }}) &nbsp;
-<p> {{ friend.name }}
+{% for friend in friendship %}
+<p> {{ friend.name }} ({{ friend.level }}) &nbsp;
 {% for x in range(8) %}
 <img id="r{{friend.rowid}}img{{x}}" src="/static/heart.png"/>
 {% endfor %}
 {% for x in range(8,10) %}
 <img id="r{{friend.rowid}}img{{x}}" src="/static/heart{{'-locked' if friend.locked else ''}}.png"/>
-</p>
+
 {% endfor %}
 <a href="{{url_for('update', iid=friend.rowid, attr='level', value=friend.level-0.5)}}">➖</a><a href="{{url_for('update', iid=friend.rowid, attr='level', value=friend.level+0.5)}}">➕</a>
 <img id="r{{friend.rowid}}gift" src="/static/gift-0.png"/>
 <a href="{{url_for('update', iid=friend.rowid, attr='gift', value=friend.gift-1)}}">➖</a><a href="{{url_for('update', iid=friend.rowid, attr='gift', value=friend.gift+1)}}">➕</a>
 {% endfor %}
+</p>
 <p>New friend
   <form action="/adminpanel" method="post">
   <div>
