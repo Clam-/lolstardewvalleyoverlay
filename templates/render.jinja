@@ -1,0 +1,36 @@
+<!doctype html>
+<link rel="preload" href="static/SVThinHu.woff2" as="font" type="font/woff2" crossorigin>
+<script>
+function update() {
+    let json = JSON.parse(await fetch("/refresh"))
+    for (const friend of json) {
+        for(const x;x<friend.level;x++) {
+            if (x == 0) {continue; }
+            document.getElementById("r"+friend.rowid+"img"+(x-1)).src = "/static/heart-full.png";
+            if (x % 0.5 == 0.5) {
+                document.getElementById("r"+friend.rowid+"img"+(x)).src = "/static/heart-half.png";
+            }
+        }
+    }
+}
+addEventListener("load", (event) => { setInterval(update, 1000)});
+</script>
+<style>
+body {
+    font-family: 'SVThinHu';
+    font-weight: 100;
+    font-style: normal;
+}
+</style>
+<title>Friendship</title>
+{% for friend in friendship %} &nbsp;
+<p> {{ friend.name }} 
+{% for x in range(8) %}
+<img id="r{{friend.rowid}}img{{x}}" src="/static/heart.png"/>
+{% endfor %}
+{% for x in range(8,10) %}
+<img id="r{{friend.rowid}}img{{x}}" src="/static/heart{{'-locked' if friend.locked else ''}}.png"/>
+</p>
+{% endfor %}
+<img id="r{{friend.rowid}}gift" src="/static/gift-0.png"/>
+{% endfor %}
