@@ -2,7 +2,7 @@
 <link rel="preload" href="static/SVThinHu.woff2" as="font" type="font/woff2" crossorigin>
 <script>
 function update() {
-    let json = JSON.parse(await fetch("/refresh"))
+    let json = await (await fetch("/refresh")).json();
     for (const friend of json) {
         for(const x;x<friend.level;x++) {
             if (x == 0) {continue; }

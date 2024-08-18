@@ -32,18 +32,18 @@ def close_connection(exception):
 
 @app.get('/')
 def index():
-    data = get_db().execute('''SELECT * FROM friendship ORDER BY name''').fetchone()
+    data = get_db().execute('''SELECT * FROM friendship ORDER BY name''').fetchall()
     return render_template('render.jinja', data=data)
 
 @app.get('/refresh')
 def refresh():
-    data = get_db().execute('''SELECT * FROM friendship ORDER BY name''').fetchone()
+    data = get_db().execute('''SELECT * FROM friendship ORDER BY name''').fetchall()
     return dict(data)
 
 
 @app.get('/adminpanel')
 def admin():
-    data = get_db().execute('''SELECT * FROM friendship ORDER BY name''').fetchone()
+    data = get_db().execute('''SELECT * FROM friendship ORDER BY name''').fetchall()
     return render_template('controlpanel.jinja', data=data)
 
 @app.get('/adminpanel/<iid>/<attr>/<value>')
