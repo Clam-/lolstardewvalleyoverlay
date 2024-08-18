@@ -10,6 +10,7 @@ UPDATES = {
 }
 SELECT_FRIENDS = '''SELECT rowid,* FROM friendship ORDER BY name;'''
 NEW_FRIEND = "INSERT INTO friendship VALUES(:name, :level, :gift, :locked);"
+DEL_FRIEND = "DELETE FROM friendship WHERE rowid=:rid;"
 TABLE_CREATE = "CREATE TABLE friendship(name TEXT, level INT, gift INT, locked INT);"
 
 app = Flask(__name__)
@@ -54,10 +55,24 @@ def update(iid, attr, value):
     con.commit()
     return redirect(url_for('admin'))
 
+@app.get('/adminpanel/newday')
+def newday():
+    con = get_db()
+    con.execute("UPDATE friendship SET gift = 0;")
+    con.commit()
+    return redirect(url_for('admin'))
+
 @app.post('/adminpanel')
 def newfriend():
     data = request.form
     con = get_db()
     con.execute(NEW_FRIEND, data)
+    con.commit()
+    return redirect(url_for('admin'))
+
+@app.get('/adminpanel/delete/<iid>')
+def delfriend(iid):
+    con = get_db()
+    con.execute(DEL_FRIEND, iid)
     con.commit()
     return redirect(url_for('admin'))

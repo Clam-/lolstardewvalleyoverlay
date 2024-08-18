@@ -1,39 +1,54 @@
 <!doctype html>
-<link href="stylesheet.css" rel="stylesheet">
-<link rel="preload" href="static/SVThinHu.woff2" as="font" type="font/woff2" crossorigin>
+<link href="/static/stylesheet.css" rel="stylesheet">
+<link rel="preload" href="/static/SVThinHu.woff2" as="font" type="font/woff2" crossorigin>
 <script>
 async function update() {
     let json = await (await fetch("/refresh")).json();
     if (json.size != 0) {
         for (const friend of json) {
-            for(let x=0; x<friend.level; x++) {
-                if (x == 0) { continue; }
-                document.getElementById("r"+friend.rowid+"img"+(x-1)).src = "/static/heart-full.png";
-                if (x % 0.5 == 0.5) {
-                    document.getElementById("r"+friend.rowid+"img"+(x)).src = "/static/heart-half.png";
-                }
-            }
+          let x = Math.floor(friend.level);
+          for(;x>=1;x--) {
+              document.getElementById("r"+friend.rowid+"img"+(x-1)).src = "/static/heart-full.png";
+          }
+          if (friend.level % 1== 0.5) {
+              document.getElementById("r"+friend.rowid+"img"+Math.floor(friend.level)).src = "/static/heart-half.png";
+          }
+          if (friend.gift >= 0 && friend.gift <= 2) { document.getElementById("r"+friend.rowid+"gift").src = "/static/gift-"+friend.gift+".png"; }
         }
     }
 }
-addEventListener("load", (event) => { setInterval(update, 1000)});
+addEventListener("load", (event) => { update(); });
 </script>
 <style>
 body {
     font-family: 'SVThinHu';
     font-weight: 100;
     font-style: normal;
+    font-size: large;
+    text-align: right;
+    margin: 0;
+    padding: 0;
+}
+img {
+  vertical-align: middle;
+}
+span {
+  vertical-align: middle;
+}
+p {
+  margin: 0;
+  padding: 0;
 }
 </style>
 <title>Friendship</title>
 {% for friend in friendship %}
-<p> {{ friend.name }} &nbsp;
+<p> <span>{{ friend.name }}</span>
 {% for x in range(8) %}
 <img id="r{{friend.rowid}}img{{x}}" src="/static/heart.png"/>
 {% endfor %}
 {% for x in range(8,10) %}
 <img id="r{{friend.rowid}}img{{x}}" src="/static/heart{{'-locked' if friend.locked else ''}}.png"/>
 {% endfor %}
-<img id="r{{friend.rowid}}gift" src="/static/gift-0.png"/>
+<img id="r{{friend.rowid}}gift" src="/static/gift-0.png" />
 {% endfor %}
 </p>
