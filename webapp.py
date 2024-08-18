@@ -36,7 +36,7 @@ def index():
     return render_template('render.jinja', data=data)
 
 @app.get('/refresh')
-def index():
+def refresh():
     data = get_db().execute('''SELECT * FROM friendship ORDER BY name''').fetchone()
     return dict(data)
 
@@ -54,7 +54,7 @@ def update(iid, attr, value):
     return redirect(url_for('admin'))
 
 @app.post('/adminpanel')
-def update():
+def newfriend():
     data = request.form
     con = get_db()
     con.execute(NEW_FRIEND, data)

@@ -13,7 +13,8 @@ function update() {
         }
     }
 }
-addEventListener("load", (event) => { setInterval(update, 1000)});
+addEventListener("load", (event) => { update(); });
+
 </script>
 <style>
 body {
@@ -32,9 +33,9 @@ body {
 <img id="r{{friend.rowid}}img{{x}}" src="/static/heart{{'-locked' if friend.locked else ''}}.png"/>
 </p>
 {% endfor %}
-<a href="javascript:delrow({{idx}})">➖</a><a href="javascript:addrow()">➕</a>
+<a href="{{url_for('update', iid=friend.rowid, attr='level', value=friend.level-0.5)}}">➖</a><a href="{{url_for('update', iid=friend.rowid, attr='level', value=friend.level+0.5)}}">➕</a>
 <img id="r{{friend.rowid}}gift" src="/static/gift-0.png"/>
-<a href="javascript:delrow({{idx}})">➖</a><a href="javascript:addrow()">➕</a>
+<a href="{{url_for('update', iid=friend.rowid, attr='gift', value=friend.gift-1)}}">➖</a><a href="{{url_for('update', iid=friend.rowid, attr='gift', value=friend.gift+1)}}">➕</a>
 {% endfor %}
 <p>New friend
   <form action="/adminpanel" method="post">
