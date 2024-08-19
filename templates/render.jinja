@@ -6,6 +6,13 @@ async function update() {
     let json = await (await fetch("/refresh")).json();
     if (json.size != 0) {
         for (const friend of json) {
+          for (let x=0;x<8;x++) {
+            document.getElementById("r"+friend.rowid+"img"+(x)).src = "/static/heart.png";
+          }
+          for (let x=8;x<10;x++) {
+            if (friend.locked) { document.getElementById("r"+friend.rowid+"img"+(x)).src = "/static/heart-locked.png"; }
+            else { document.getElementById("r"+friend.rowid+"img"+(x)).src = "/static/heart.png"; }
+          }
           let x = Math.floor(friend.level);
           for(;x>=1;x--) {
               document.getElementById("r"+friend.rowid+"img"+(x-1)).src = "/static/heart-full.png";
@@ -17,7 +24,7 @@ async function update() {
         }
     }
 }
-addEventListener("load", (event) => { update(); });
+addEventListener("load", (event) => { setInterval(update, 1000); });
 </script>
 <style>
 body {
@@ -34,6 +41,7 @@ img {
 }
 span {
   vertical-align: middle;
+  text-shadow: 1px 1px #fff;
 }
 p {
   margin: 0;
