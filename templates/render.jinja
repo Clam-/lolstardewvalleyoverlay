@@ -2,29 +2,86 @@
 <link href="/static/stylesheet.css" rel="stylesheet">
 <link rel="preload" href="/static/SVThinHu.woff2" as="font" type="font/woff2" crossorigin>
 <script>
+var INTERVALID = null;
+var UPDATE_RATE = {{updaterate}};
+function sortFriends() {
+    let elems = [...document.querySelectorAll("p[id^='r']")];
+    elems.sort((a,b) => { return a.textContent.localeCompare(b.textContent); })
+    for (const elem of elems) { document.body.append(elem); }
+}
+function createNode(type, attrs) {
+    let e = document.createElement(type);
+    for (const prop in attrs) {
+        e[prop] = attrs[prop];
+    }
+    return e;
+}
+function addFriend(friend) {
+    let newfriend = document.createElement("p"); newfriend.id = "r"+friend.rowid;
+    newfriend.append("\n");
+    newfriend.appendChild(createNode("span", {"textContent": friend.name}));
+    newfriend.append("\n");
+    for (let x=0;x<8;x++){
+        newfriend.appendChild(createNode("img", {"id": "r"+friend.rowid+"img"+x, "src":"/static/heart.png"}));
+        newfriend.append("\n");
+    }
+    for (let x=8;x<10;x++) {
+        if (friend.locked) {
+            newfriend.appendChild(createNode("img", {"id": "r"+friend.rowid+"img"+x, "src":"/static/heart-locked.png"}));
+        } else {
+            newfriend.appendChild(createNode("img", {"id": "r"+friend.rowid+"img"+x, "src":"/static/heart.png"}));
+        }
+        newfriend.append("\n");
+    }
+    newfriend.append(createNode("img", {"id": "r"+friend.rowid+"gift", "src":"/static/gift-0.png"}));
+    newfriend.append("\n");
+    document.body.append(newfriend);
+    sortFriends();
+}
+async function updateImg(id, src) {
+    let ele = document.getElementById(id);
+    if (new URL(ele.src).pathname != src) { ele.src = src; }
+}
 async function update() {
     let json = await (await fetch("/refresh")).json();
-    if (json.size != 0) {
-        for (const friend of json) {
-          for (let x=0;x<8;x++) {
-            document.getElementById("r"+friend.rowid+"img"+(x)).src = "/static/heart.png";
-          }
-          for (let x=8;x<10;x++) {
-            if (friend.locked) { document.getElementById("r"+friend.rowid+"img"+(x)).src = "/static/heart-locked.png"; }
-            else { document.getElementById("r"+friend.rowid+"img"+(x)).src = "/static/heart.png"; }
-          }
-          let x = Math.floor(friend.level);
-          for(;x>=1;x--) {
-              document.getElementById("r"+friend.rowid+"img"+(x-1)).src = "/static/heart-full.png";
-          }
-          if (friend.level % 1== 0.5) {
-              document.getElementById("r"+friend.rowid+"img"+Math.floor(friend.level)).src = "/static/heart-half.png";
-          }
-          if (friend.gift >= 0 && friend.gift <= 2) { document.getElementById("r"+friend.rowid+"gift").src = "/static/gift-"+friend.gift+".png"; }
+    let urate = json["updaterate"]
+    if (urate != UPDATE_RATE) {
+        clearInterval(INTERVALID);
+        INTERVALID = setInterval(update, urate);
+        UPDATE_RATE = urate;
+    }
+    let items = json["items"]
+    let ids = [];
+    if (items.size != 0) {
+        for (const friend of items) {
+            ids.push("r"+friend.rowid);
+            if (document.getElementById("r"+friend.rowid) == null) { addFriend(friend); }
+            for (let x=0;x<8;x++) {
+                updateImg("r"+friend.rowid+"img"+x, "/static/heart.png");
+            }
+            for (let x=8;x<10;x++) {
+                if (friend.locked) { updateImg("r"+friend.rowid+"img"+x, "/static/heart-locked.png"); }
+                else { updateImg("r"+friend.rowid+"img"+x, "/static/heart.png"); }
+            }
+            let x = Math.floor(friend.level);
+            for(;x>=1;x--) {
+                updateImg("r"+friend.rowid+"img"+(x-1), "/static/heart-full.png");
+            }
+            if (friend.level % 1== 0.5) {
+                updateImg("r"+friend.rowid+"img"+Math.floor(friend.level), "/static/heart-half.png");
+            }
+            if (friend.gift >= 0 && friend.gift <= 2) { updateImg("r"+friend.rowid+"gift", "/static/gift-"+friend.gift+".png"); }
         }
     }
+    let remove = [];
+    for (const elem of document.querySelectorAll("p[id^='r']")) {
+        if (!ids.includes(elem.id)) {
+            remove.push(elem);
+        }
+    }
+    for (const elem of remove) { elem.remove(); }
 }
-addEventListener("load", (event) => { setInterval(update, 1000); });
+addEventListener("load", (event) => { sortFriends();update();INTERVALID = setInterval(update, {{ updaterate }}); });
 </script>
 <style>
 body {
@@ -50,7 +107,7 @@ p {
 </style>
 <title>Friendship</title>
 {% for friend in friendship %}
-<p> <span>{{ friend.name }}</span>
+<p id="r{{friend.rowid}}"><span>{{ friend.name }}</span>
 {% for x in range(8) %}
 <img id="r{{friend.rowid}}img{{x}}" src="/static/heart.png"/>
 {% endfor %}

@@ -4,16 +4,25 @@
 <script>
 async function update() {
     let json = await (await fetch("/refresh")).json();
-    if (json.size != 0) {
-        for (const friend of json) {
-          let x = Math.floor(friend.level);
-          for(;x>=1;x--) {
-              document.getElementById("r"+friend.rowid+"img"+(x-1)).src = "/static/heart-full.png";
-          }
-          if (friend.level % 1== 0.5) {
-              document.getElementById("r"+friend.rowid+"img"+Math.floor(friend.level)).src = "/static/heart-half.png";
-          }
-          if (friend.gift >= 0 && friend.gift <= 2) { document.getElementById("r"+friend.rowid+"gift").src = "/static/gift-"+friend.gift+".png"; }
+    let items = json["items"]
+    if (items.size != 0) {
+        for (const friend of items) {
+            if (document.getElementById("r"+friend.rowid) == null) { console.log(friend); }
+            for (let x=0;x<8;x++) {
+                document.getElementById("r"+friend.rowid+"img"+(x)).src = "/static/heart.png";
+            }
+            for (let x=8;x<10;x++) {
+                if (friend.locked) { document.getElementById("r"+friend.rowid+"img"+(x)).src = "/static/heart-locked.png"; }
+                else { document.getElementById("r"+friend.rowid+"img"+(x)).src = "/static/heart.png"; }
+            }
+            let x = Math.floor(friend.level);
+            for(;x>=1;x--) {
+                document.getElementById("r"+friend.rowid+"img"+(x-1)).src = "/static/heart-full.png";
+            }
+            if (friend.level % 1== 0.5) {
+                document.getElementById("r"+friend.rowid+"img"+Math.floor(friend.level)).src = "/static/heart-half.png";
+            }
+            if (friend.gift >= 0 && friend.gift <= 2) { document.getElementById("r"+friend.rowid+"gift").src = "/static/gift-"+friend.gift+".png"; }
         }
     }
 }
@@ -39,6 +48,13 @@ p {
   margin: 0;
   padding: 0;
 }
+a:link, a:visited, a:hover, a:active { text-decoration: none; color:aqua; }
+.inactiveLink {
+   pointer-events: none;
+   cursor: default;
+}
+.lock  { color: rgb(190, 67, 93) !important; }
+.unlock  { color: rgb(54, 195, 110) !important; }
 </style>
 <title>Friendship - admin</title>
 {% for friend in friendship %}
@@ -50,33 +66,42 @@ p {
 <img id="r{{friend.rowid}}img{{x}}" src="/static/heart{{'-locked' if friend.locked else ''}}.png"/>
 
 {% endfor %}
-<span><a href="{{url_for('update', iid=friend.rowid, attr='level', value=friend.level-0.5)}}">➖</a><a href="{{url_for('update', iid=friend.rowid, attr='level', value=friend.level+0.5) if friend.level < 8 or not friend.locked else ''}}">➕</a></span>
-<a href="{{url_for('update', iid=friend.rowid, attr='lock', value=0 if friend.locked else 1)}}">{{'🔓' if friend.locked else '🔒'}}</a>
+<span><a href="{{url_for('update', iid=friend.rowid, attr='level', value=friend.level-0.5)}}">➖</a><a class="{{'' if friend.level < 8 or not friend.locked else 'inactiveLink' }}" href="{{url_for('update', iid=friend.rowid, attr='level', value=friend.level+0.5)}}">➕</a></span>
+<a class="{{'unlock' if friend.locked else 'lock'}}" href="{{url_for('update', iid=friend.rowid, attr='lock', value=0 if friend.locked else 1)}}">{{'&#128275;&#xfe0e;' if friend.locked else '&#128274;&#xfe0e;'}}</a>
 <span>({{ friend.gift }}) &nbsp;</span>
 <img id="r{{friend.rowid}}gift" src="/static/gift-0.png" />
-<span><a href="{{url_for('update', iid=friend.rowid, attr='gift', value=friend.gift-1) if friend.gift > 0 else ''}}">➖</a><a href="{{url_for('update', iid=friend.rowid, attr='gift', value=friend.gift+1) if friend.gift < 2 else ''}}">➕</a></span>
+<span><a class="{{'inactiveLink' if friend.gift < 1 else '' }}" href="{{url_for('update', iid=friend.rowid, attr='gift', value=friend.gift-1)}}">➖</a><a class="{{'inactiveLink' if friend.gift > 1 else ''}}" href="{{url_for('update', iid=friend.rowid, attr='gift', value=friend.gift+1)}}">➕</a></span>
 <span><a href="{{url_for('delfriend', iid=friend.rowid)}}">❌</a></span>
 {% endfor %}
 </p>
-<a href="{{url_for('newday')}}">New day</a>
+<a href="{{url_for('newday')}}">New week</a>
 <p>New friend
-  <form action="/adminpanel" method="post">
+  <form action="{{url_for('newfriend')}}" method="post">
   <div>
-      <label for="name">Name</label>
-      <input id="name" name="name" value=""/>
-    </div>
-    <div>
-      <label for="level">Level</label>
-      <input type="number" step="0.5" id="level" name="level" value="1"/>
-    </div>
-    <div>
-      <label for="gift">Gift</label>
-      <input type="number" step="1" id="gift" name="gift" value="0"/>
-    </div>
-    <div>
-      <label for="locked">Locked</label>
-      <input type="number" step="1" id="locked" name="locked" value="1"/>
-    </div>
+    <label for="name">Name</label>
+    <input id="name" name="name" value=""/>
+  </div>
+  <div>
+    <label for="level">Level</label>
+    <input type="number" step="0.5" id="level" name="level" value="1"/>
+  </div>
+  <div>
+    <label for="gift">Gift</label>
+    <input type="number" step="1" id="gift" name="gift" value="0"/>
+  </div>
+  <div>
+    <label for="locked">Locked</label>
+    <input type="number" step="1" id="locked" name="locked" value="1"/>
+  </div>
   <input type="submit" value="Add" />
+</form>
+</p>
+<p>
+<form action="{{url_for('refreshtimer')}}" method="post">
+<div>
+  <label for="refreshtime">Refresh delay:</label>
+  <input id="refreshtime" name="refreshtime" type="number" step=500 value="{{updaterate}}"/>
+  <input type="submit" value="update" />
+</div>
 </form>
 </p>
